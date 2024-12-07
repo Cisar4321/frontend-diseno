@@ -133,7 +133,6 @@ export class EmpleadoService {
     if (!token) {
       throw new Error('No autorizado. El token de autenticación no está presente.');
     }
-
     const response = await axios.get<EmpleadoSelfResponseDto>(`${this.baseUrl}/me`, {
       headers: { Authorization: `Bearer ${token}` },
     });

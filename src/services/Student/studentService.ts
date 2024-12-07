@@ -31,7 +31,6 @@ export interface EstudianteResponseDto {
 }
 
 export interface EstudianteSelfResponseDto {
-  id: number;
   firstName: string;
   lastName: string;
   email: string;
@@ -119,13 +118,10 @@ export class EstudianteService {
 
   // Obtener la información del estudiante autenticado
   async getEstudianteOwnInfo(): Promise<EstudianteSelfResponseDto> {
-    const token = AuthService.getToken();
-
-    
+    const token = this.getToken();
     if (!token) {
       throw new Error('No autorizado. El token de autenticación no está presente.');
     }
-
     const response = await axios.get<EstudianteSelfResponseDto>(`${this.baseUrl}/me`, {
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -164,6 +160,7 @@ export class EstudianteService {
       // Si se proporciona una foto de perfil, añadirla al FormData
       if (fotoPerfil) {
         formData.append('fotoPerfil', fotoPerfil);
+        console.log(formData);
       }
 
       // Realizar la solicitud PATCH con el FormData

@@ -71,6 +71,8 @@ const UserProfile_EditProfile = () => {
 
       try {
         const updatedInfo = await estudianteService.updateEstudianteInfo(updateData, typeof fotoPerfilUrl === "object" ? fotoPerfilUrl : null);
+        console.log("Updated data:", updateData);
+        console.log("Foto Perfil URL:", fotoPerfilUrl);
         console.log("Updated info:", updatedInfo);
         setUserInfo(updatedInfo);
         alert("Información actualizada exitosamente.");

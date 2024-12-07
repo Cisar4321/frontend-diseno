@@ -22,7 +22,9 @@ const UserProfile_Overview = () => {
           // Si el rol es estudiante, obtiene la información del estudiante
           const service = new EstudianteService();
           const info = await service.getEstudianteOwnInfo();
+          console.log(info);
           setUserInfo(info);
+
         } else if (userRole === 'Empleado') {
           // Si el rol es empleado, obtiene la información del empleado
           const service = new EmpleadoService();

@@ -15,10 +15,6 @@ const UserProfile_Setting = () => {
   const [userInfo, setUserInfo] = useState<UserInfo>(null);
   const [employeeInfo, ] = useState<any | null>(null); // Estado para la información del empleado
 
-
-
-
-
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
@@ -48,7 +44,7 @@ const UserProfile_Setting = () => {
 
     fetchUserInfo(); // Llama a la función cuando el componente se monta
   }, []);
-
+  
   return (
     <div className="bg-[#f5f5ff] flex min-h-screen">
       <Navbar/>
