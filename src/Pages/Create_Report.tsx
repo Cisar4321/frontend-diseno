@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import incidente from "../img/crearReporte/incidente.png";
 import objetoPerdido from "../img/crearReporte/objetoPerdido.png";
 import { useNavigate } from "react-router-dom";
@@ -42,30 +42,37 @@ const Create_Report = () => {
     fetchEstudianteInfo();
   }, []);
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
+  
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0]; // Obtener el archivo seleccionado
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files ? e.target.files[0] : null; // Safe check if files exist
     setSelectedFile(file);
-
+  
     // Crear una URL de vista previa para el archivo
     if (file) {
       const fileUrl = URL.createObjectURL(file);
       setImagePreview(fileUrl);
     }
   };
+  
 
   useEffect(() => {
     setCurrentImage(reportType === 'Objeto' ? objetoPerdido : incidente);
   }, [reportType]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-
+  
     if (reportType === 'Objeto') {
+      let fotoObjetoPerdidoUrl = '';
+      if (selectedFile) {
+        fotoObjetoPerdidoUrl = imagePreview || '';
+      }
+  
       const objetoPerdidoRequest: ObjetoPerdidoRequestDto = {
         piso: formData.piso,
         ubicacion: formData.ubicacion,
@@ -76,16 +83,22 @@ const Create_Report = () => {
         fechaReporte: formData.fechaReporte,
         estadoReporte: EstadoReporte.PENDIENTE,
         estadoTarea: EstadoTarea.NO_FINALIZADO,
+        fotoObjetoPerdidoUrl: fotoObjetoPerdidoUrl,
       };
-
+  
       try {
-        const response = await objetoPerdidoService.saveObjetoPerdido(objetoPerdidoRequest, selectedFile); // Incluyendo el archivo
+        const response = await objetoPerdidoService.saveObjetoPerdido(objetoPerdidoRequest, selectedFile as File | null);
         console.log("Reporte de Objeto enviado exitosamente:", response);
         navigate("/reports");
       } catch (error) {
         console.error("Error al enviar el reporte de Objeto:", error);
       }
     } else if (reportType === 'Incidente') {
+      let fotoIncidenteUrl = '';
+      if (selectedFile) {
+        fotoIncidenteUrl = imagePreview || '';
+      }
+  
       const incidenteRequest: IncidenteRequestDto = {
         piso: formData.piso,
         ubicacion: formData.ubicacion,
@@ -96,8 +109,9 @@ const Create_Report = () => {
         fechaReporte: formData.fechaReporte,
         estadoReporte: EstadoReporte.PENDIENTE,
         estadoTarea: EstadoTarea.NO_FINALIZADO,
+        fotoIncidenteUrl: fotoIncidenteUrl, // Include the incident photo URL
       };
-
+  
       try {
         const response = await incidenteService.createIncidente(incidenteRequest);
         console.log("Reporte de Incidente enviado exitosamente:", response);
@@ -107,6 +121,9 @@ const Create_Report = () => {
       }
     }
   };
+  
+  
+
 
   return (
     <div className="bg-[#f5f5ff] min-h-screen flex">

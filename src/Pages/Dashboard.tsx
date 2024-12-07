@@ -1,14 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS, LineElement, PointElement, LinearScale, CategoryScale } from 'chart.js';
+import { useState, useEffect } from 'react';
 import Navbar from '../components/NavBar';
 import { AdminService } from '../services/Admin/adminService';
+import { Chart as ChartJS, LineElement, PointElement, LinearScale, CategoryScale } from 'chart.js';
+import { Line } from 'react-chartjs-2';
+import { ChartOptions } from 'chart.js';
 
+// Register components in ChartJS
 ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale);
+
 
 const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [last7Days, setLast7Days] = useState([]);
+  const [last7Days, setLast7Days] = useState<string[]>([]);
   const [OpHoy, setOpHoy] = useState([0]);
   const [InHoy, setInHoy] = useState([0]);
   const [objetosPerdidos, setObjetosPerdidos] = useState<number[]>([]);
@@ -57,30 +60,37 @@ const Dashboard = () => {
     return days;
   };
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
+  
 
-  const options = {
+  const options: ChartOptions<'line'> = {
     responsive: true,
     scales: {
       y: {
+        type: 'linear',
         beginAtZero: true,
         ticks: {
           stepSize: 2,
           padding: 4,
         },
         grid: {
-          borderDash: [2, 2],
+          drawOnChartArea: true, // Dibuja las líneas de la cuadrícula
+          color: '#000', // Color de las líneas de la cuadrícula
+          lineWidth: 1, // Grosor de las líneas
         },
       },
       x: {
+        type: 'category',
         grid: {
-          display: false,
+          display: false, // Desactiva la visualización de la cuadrícula en el eje X
         },
       },
     },
   };
+  
+   
 
   const data = {
     labels: last7Days,

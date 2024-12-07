@@ -1,49 +1,98 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/NavBar';
 import { EstudianteService } from '../services/Student/studentService';
 
 const Reports = () => {
   const navigate = useNavigate();
+
+  // Define types for report and incident
+  interface Report {
+    fechaReporte: string;
+    piso: string;
+    detalle: string;
+    estadoReporte: 'PENDIENTE' | 'ACEPTADO' | 'RECHAZADO';
+    email: string;
+  }
+
+  interface Incident {
+    fecha: string;
+    descripcion: string;
+  }
+
+  interface IncidenteResponseDto {
+    id: number;
+    piso: string;
+    detalle: string;
+    ubicacion: string;
+    estadoReporte: EstadoReporte;
+    estadoTarea: EstadoTarea;
+    email: string;
+    phoneNumber: string;
+    description?: string;
+    estudianteId?: number;
+    empleadoId?: number;
+    fechaReporte: string;
+    fotoIncidenteUrl:string;
+  }
+
+  enum EstadoReporte {
+    RECHAZADO = 'RECHAZADO',
+    PENDIENTE = 'PENDIENTE',
+    ACEPTADO = 'ACEPTADO',
+  }
+  
+  enum EstadoTarea {
+    NO_FINALIZADO = 'NO_FINALIZADO',
+    FINALIZADO = 'FINALIZADO',
+  }
   const estudianteService = new EstudianteService();
 
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [userRole, setUserRole] = useState('student');
-  const [reports, setReports] = useState([]);
-  const [incidents, setIncidents] = useState([]); // Estado para incidentes
+  const [userRole, ] = useState('student');
+  const [reports, setReports] = useState<Report[]>([]);
+  const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState('Objetos Perdidos'); // Alterna entre tablas
-
+  
   // Obtener reportes e incidentes
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         const lostObjects = await estudianteService.getEstudianteObjetosPerdidos();
-        const incidentsData = await estudianteService.getEstudianteIncidentes(); // Servicio para incidentes
+        const incidentsData = await estudianteService.getEstudianteIncidentes();
+  
+        // Assuming `IncidenteResponseDto` has properties `fecha` and `descripcion` as shown in the error
+        const mappedIncidents = incidentsData.map((incident: IncidenteResponseDto) => ({
+          fecha: incident.fechaReporte,
+          descripcion: incident.detalle,
+        }));
+  
         setReports(lostObjects);
-        setIncidents(incidentsData);
+        setIncidents(mappedIncidents); // Set the mapped incidents
       } catch (error) {
         console.error('Error al obtener datos:', error);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchData();
   }, []);
+  
 
   const totalPages = Math.ceil(
     (currentView === 'Objetos Perdidos' ? reports.length : incidents.length) / entriesPerPage
   );
 
-  const handleEntriesChange = (e) => {
+  const handleEntriesChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setEntriesPerPage(Number(e.target.value));
     setCurrentPage(1);
   };
 
-  const handlePageChange = (pageNumber) => {
+  const handlePageChange = (pageNumber: number) => {
     if (pageNumber > 0 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
     }
@@ -55,7 +104,7 @@ const Reports = () => {
       ? reports.slice(startIndex, startIndex + entriesPerPage)
       : incidents.slice(startIndex, startIndex + entriesPerPage);
 
-  const updateReportStatus = (email, newStatus) => {
+  const updateReportStatus = (email: string, newStatus: 'PENDIENTE' | 'ACEPTADO' | 'RECHAZADO') => {
     const updatedReports = reports.map((report) => {
       if (report.email === email) {
         return { ...report, estadoReporte: newStatus };
@@ -63,6 +112,11 @@ const Reports = () => {
       return report;
     });
     setReports(updatedReports);
+  };
+
+  // Type guard to check if entry is a Report
+  const isReport = (entry: Report | Incident): entry is Report => {
+    return (entry as Report).fechaReporte !== undefined;
   };
 
   if (loading) {
@@ -159,50 +213,52 @@ const Reports = () => {
               </thead>
               <tbody>
                 {currentEntries.map((entry) => {
-                  let statusColor = '';
+                  if (isReport(entry)) {
+                    let statusColor = '';
+                    switch (entry.estadoReporte) {
+                      case 'PENDIENTE':
+                        statusColor = 'bg-yellow-600';
+                        break;
+                      case 'RECHAZADO':
+                        statusColor = 'bg-red-600';
+                        break;
+                      case 'ACEPTADO':
+                        statusColor = 'bg-green-600';
+                        break;
+                      default:
+                        statusColor = '';
+                    }
 
-                  switch (entry.estadoReporte) {
-                    case 'PENDIENTE':
-                      statusColor = 'bg-yellow-600';
-                      break;
-                    case 'RECHAZADO':
-                      statusColor = 'bg-red-600';
-                      break;
-                    case 'ACEPTADO':
-                      statusColor = 'bg-green-600';
-                      break;
-                    default:
-                      statusColor = '';
-                  }
-
-                  return (
-                    <tr className="border-t" key={entry.id}>
-                      <td className="py-2 px-4">{entry.fechaReporte}</td>
-                      <td className="py-2 px-4">{entry.piso}</td>
-                      <td className="py-2 px-4">{entry.detalle}</td>
-                      <td className="py-2 px-4 flex items-center">
-                        <span
-                          className={`inline-block w-3 h-3 rounded mr-2 ${statusColor}`}
-                        ></span>
-                        {entry.estadoReporte}
-                      </td>
-                      {userRole === 'admin' && (
-                        <td className="py-2 px-4">
-                          <select
-                            onChange={(e) =>
-                              updateReportStatus(entry.email, e.target.value)
-                            }
-                            value={entry.estadoReporte}
-                            className="border border-gray-300 rounded p-1"
-                          >
-                            <option value="PENDIENTE">Pendiente</option>
-                            <option value="ACEPTADO">Aceptado</option>
-                            <option value="RECHAZADO">Rechazado</option>
-                          </select>
+                    return (
+                      <tr className="border-t" key={entry.email}>
+                        <td className="py-2 px-4">{entry.fechaReporte}</td>
+                        <td className="py-2 px-4">{entry.piso}</td>
+                        <td className="py-2 px-4">{entry.detalle}</td>
+                        <td className="py-2 px-4 flex items-center">
+                          <span
+                            className={`inline-block w-3 h-3 rounded mr-2 ${statusColor}`}
+                          ></span>
+                          {entry.estadoReporte}
                         </td>
-                      )}
-                    </tr>
-                  );
+                        {userRole === 'admin' && (
+                          <td className="py-2 px-4">
+                            <select
+                              onChange={(e) =>
+                                updateReportStatus(entry.email, e.target.value as 'PENDIENTE' | 'ACEPTADO' | 'RECHAZADO')
+                              }
+                              value={entry.estadoReporte}
+                              className="border border-gray-300 rounded p-1"
+                            >
+                              <option value="PENDIENTE">Pendiente</option>
+                              <option value="ACEPTADO">Aceptado</option>
+                              <option value="RECHAZADO">Rechazado</option>
+                            </select>
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  }
+                  return null;
                 })}
               </tbody>
             </table>

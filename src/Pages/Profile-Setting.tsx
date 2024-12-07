@@ -1,24 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import fernandoImage from '../img/team/fernando_munoz.jpeg';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/NavBar';
 import { AuthService } from '../services/Auth/authService';
 import { EstudianteService } from '../services/Student/studentService';
 import { EstudianteSelfResponseDto } from '../services/Student/studentService'; // Importa el DTO
-import { EmpleadoService } from '../services/Employees/employeeService'; // Importa el servicio para Empleado
+import { EmpleadoService, EmpleadoSelfResponseDto } from '../services/Employees/employeeService'; // Importa el servicio para Empleado
 
 const UserProfile_Setting = () => {
+  type UserInfo = EstudianteSelfResponseDto | EmpleadoSelfResponseDto | null;
+
+
   const [role, setRole] = useState<string | null>(null); // Nuevo estado para el rol
-  const [userInfo, setUserInfo] = useState<EstudianteSelfResponseDto | null>(null);
-  const [employeeInfo, setEmployeeInfo] = useState<any | null>(null); // Estado para la información del empleado
+  const [userInfo, setUserInfo] = useState<UserInfo>(null);
+  const [employeeInfo, ] = useState<any | null>(null); // Estado para la información del empleado
+
+
+
+
 
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
         // Primero obtiene la información del estudiante
         // Obtiene el rol del JWT usando AuthService
-        const userRole = AuthService.getUserInfo()?.role;
-        setRole(userRole); // Guarda el rol en el estado
+        const userRole = AuthService.getUserInfo()?.role ?? null; // Default to null if undefined
+        setRole(userRole);
+        
 
         // Si el rol es "Empleado", obtiene la información adicional
         if (userRole === 'Estudiante') {
@@ -67,7 +75,11 @@ const UserProfile_Setting = () => {
 
         <div className="flex space-x-4 mt-4">
           <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center w-96 h-60">
-            <img src={userInfo?.fotoPerfilUrl||fernandoImage} alt="Fernando Muñoz" className="w-32 h-32 object-cover rounded-full mb-2" />
+          <img
+            src={userInfo && 'fotoPerfilUrl' in userInfo ? userInfo.fotoPerfilUrl : fernandoImage}
+            alt="Fernando Muñoz"
+            className="w-32 h-32 object-cover rounded-full mb-2"
+          />
             <div className="text-center">
               <h3 className="text-2xl font-semibold">{userInfo?.firstName ? `${userInfo.firstName} ${userInfo.lastName}` : "Nombre Usuario"}</h3>
               <h4 className="text-lg text-gray-500">{role}</h4>

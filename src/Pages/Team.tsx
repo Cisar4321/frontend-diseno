@@ -1,9 +1,7 @@
-import React from 'react';
 import cesarImage from '../img/team/cesar_tinco.png';
 import fernandoImage from '../img/team/fernando_munoz.jpeg';
 import jaimeImage from '../img/team/jaime_farfan.jpg'; // Miembro 4
 import oscarImage from '../img/team/oscar_ramirez.jpeg'; // Miembro 3
-import { Link } from 'react-router-dom';
 import Navbar from '../components/NavBar';
 
 const Team = () => {

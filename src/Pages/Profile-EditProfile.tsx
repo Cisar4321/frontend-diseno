@@ -4,10 +4,10 @@ import Navbar from '../components/NavBar';
 import fernandoImage from '../img/team/fernando_munoz.jpeg';
 import { AuthService } from '../services/Auth/authService';
 import { EstudianteService, EstudiantePatchRequestDto, EstudianteSelfResponseDto } from '../services/Student/studentService';
-import { EmpleadoService, EmpleadoPatchRequestDto, EmpleadoSelfResponseDto } from '../services/Employees/employeeService';
+import { EmpleadoService, EmpleadoSelfResponseDto } from '../services/Employees/employeeService';
 
 const UserProfile_EditProfile = () => {
-  const [userInfo, setUserInfo] = useState<EstudianteSelfResponseDto | EmpleadoSelfResponseDto | null>(null);
+  const [, setUserInfo] = useState<EstudianteSelfResponseDto | EmpleadoSelfResponseDto | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
@@ -19,7 +19,7 @@ const UserProfile_EditProfile = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const userRole = AuthService.getUserInfo()?.role;
+        const userRole = AuthService.getUserInfo()?.role ?? null;
         setRole(userRole);
 
         let info;
@@ -38,7 +38,6 @@ const UserProfile_EditProfile = () => {
           setLastName(info.lastName || "");
           setPhone(info.phoneNumber || "");
           setEmail(info.email || "");
-          setfotoPerfilUrl(info.fotoPerfilUrl || '');
         } else {
           setUserInfo(null); 
         }
@@ -79,24 +78,7 @@ const UserProfile_EditProfile = () => {
         console.error("Error al actualizar la información del estudiante:", error);
         alert("Hubo un error al actualizar la información.");
       }
-    } else if (role === 'Empleado') {
-      const empleadoService = new EmpleadoService();
-      updateData = {
-        firstName: firstName,
-        lastName: lastName,
-        phoneNumber: phone,
-        email: email
-      } as EmpleadoPatchRequestDto;
-      
-      try {
-        const updatedInfo = await empleadoService.updateEmpleadoInfo(updateData);
-        console.log("Updated info:", updatedInfo);
-        setUserInfo(updatedInfo);
-        alert("Información actualizada exitosamente.");
-      } catch (error) {
-        console.error("Error al actualizar la información del empleado:", error);
-        alert("Hubo un error al actualizar la información.");
-      }
+
     }
   };
 

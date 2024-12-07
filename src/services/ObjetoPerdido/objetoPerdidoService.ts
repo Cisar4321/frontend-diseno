@@ -65,7 +65,7 @@ export class ObjetoPerdidoService {
       return response.data;
     } catch (error) {
       console.error('Error fetching all objetos perdidos:', error);
-      throw new Error(error.response?.data?.message || 'Error al obtener los objetos perdidos');
+      throw new Error('Error al obtener los objetos perdidos');
     }
   }
 
@@ -75,7 +75,7 @@ export class ObjetoPerdidoService {
       const response = await axios.get<ObjetoPerdidoResponseDto>(`${this.baseUrl}/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`Error fetching objeto perdido with ID ${id}:`, error.response?.data || error.message);
+      console.error(`Error fetching objeto perdido with ID ${id}:`, error);
       throw new Error(`Failed to fetch objeto perdido with ID ${id}`);
     }
   }
@@ -129,7 +129,7 @@ export class ObjetoPerdidoService {
       });
       return response.data;
     } catch (error) {
-      console.error(`Error updating status for objeto perdido with ID ${id}:`, error.response?.data || error.message);
+      console.error(`Error updating status for objeto perdido with ID ${id}:`, error);
       throw new Error('No se pudo actualizar el estado del objeto perdido');
     }
   }
@@ -145,7 +145,7 @@ export class ObjetoPerdidoService {
         headers: { Authorization: `Bearer ${token}` },
       });
     } catch (error) {
-      console.error(`Error deleting objeto perdido with ID ${id}:`, error.response?.data || error.message);
+      console.error(`Error deleting objeto perdido with ID ${id}:`, error);
       throw new Error('No se pudo eliminar el objeto perdido');
     }
   }

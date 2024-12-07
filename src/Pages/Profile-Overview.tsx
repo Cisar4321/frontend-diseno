@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/NavBar';
 import fernandoImage from '../img/team/fernando_munoz.jpeg';
@@ -15,7 +15,7 @@ const UserProfile_Overview = () => {
     const fetchUserInfo = async () => {
       try {
         // Obtiene el rol del JWT usando AuthService
-        const userRole = AuthService.getUserInfo()?.role;
+        const userRole = AuthService.getUserInfo()?.role?? null;
         setRole(userRole); // Guarda el rol en el estado
 
         if (userRole === 'Estudiante') {

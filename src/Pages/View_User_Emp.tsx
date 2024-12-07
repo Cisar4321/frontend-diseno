@@ -1,13 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';  // Importamos useNavigate
 import Navbar from '../components/NavBar';
 import { EmpleadoService } from '../services/Employees/employeeService';
 
+
+interface LostItem {
+  id: number;
+  piso: string;
+  ubicacion: string;
+  estadoReporte: string;
+  estadoTarea: string;
+  detalle: string;
+}
+
+interface Incident {
+  id: number;
+  piso: string;
+  ubicacion: string;
+  estadoReporte: string;
+  estadoTarea: string;
+  hecho: string;
+}
+
+interface User {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  email: string;
+  // Add any other properties that are part of the employee's data
+}
+
 const ViewReportsEmp = () => {
   const { id } = useParams();
-  const [user, setUser] = useState(null);
-  const [lostItems, setLostItems] = useState([]);
-  const [incidents, setIncidents] = useState([]);
+  const [user, setUser] = useState<User | null>(null);
+  const [lostItems, ] = useState<LostItem[]>([]);
+  const [incidents, ] = useState<Incident[]>([]);
+
   
   const navigate = useNavigate();  // Creamos el hook de navegación
 
@@ -19,16 +47,8 @@ const ViewReportsEmp = () => {
     const loadData = async () => {
       try {
         // Obtener información del empleado por ID
-        const userData = await empleadoService.getEmpleado(id);  
+        const userData = await empleadoService.getEmpleado(Number(id));  
         setUser(userData);
-
-        // Obtener los objetos perdidos del empleado
-        const lostItemsData = await empleadoService.getEmpleadoObjetosPerdidos();  
-        setLostItems(lostItemsData);
-
-        // Obtener los incidentes del empleado
-        const incidentsData = await empleadoService.getEmpleadoIncidentes();  
-        setIncidents(incidentsData);
 
       } catch (error) {
         console.error('Error al obtener los datos:', error);

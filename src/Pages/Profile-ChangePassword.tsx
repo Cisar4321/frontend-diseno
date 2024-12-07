@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import fernandoImage from '../img/team/fernando_munoz.jpeg';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/NavBar';
@@ -15,10 +15,10 @@ const UserProfile_ChangePassword = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const userRole = AuthService.getUserInfo()?.role;
+        const userRole = AuthService.getUserInfo()?.role ?? null;
         setRole(userRole); // Establece el rol del usuario
-
-        let info;
+  
+        let info: EstudianteSelfResponseDto | EmpleadoSelfResponseDto | undefined;
         if (userRole === 'Estudiante') {
           const studentService = new EstudianteService();
           info = await studentService.getEstudianteOwnInfo(); // Obtiene información del estudiante
@@ -26,15 +26,18 @@ const UserProfile_ChangePassword = () => {
           const employeeService = new EmpleadoService();
           info = await employeeService.getEmpleadoSelf(); // Obtiene información del empleado
         }
-
-        setUserInfo(info); // Guarda la información en el estado
+  
+        if (info) {
+          setUserInfo(info); // Solo establece la info si no es undefined
+        }
       } catch (error) {
         console.error('Error al obtener la información del usuario:', error);
       }
     };
-
+  
     fetchUserInfo(); // Llama a la función cuando el componente se monta
   }, []); 
+  
 
   return (
     <div className="bg-[#f5f5ff] flex min-h-screen">
@@ -62,7 +65,12 @@ const UserProfile_ChangePassword = () => {
 
         <div className="flex space-x-4 mt-4">
           <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center w-96 h-60">
-            <img src={userInfo?.fotoPerfilUrl || fernandoImage} alt="Usuario" className="w-32 h-32 object-cover rounded-full mb-2" />
+          <img 
+            src={role === 'Estudiante' && userInfo && 'fotoPerfilUrl' in userInfo ? userInfo.fotoPerfilUrl : fernandoImage} 
+            alt="Usuario" 
+            className="w-32 h-32 object-cover rounded-full mb-2" 
+          />
+
             <div className="text-center">
               <h3 className="text-2xl font-semibold">{userInfo?.firstName ? `${userInfo.firstName} ${userInfo.lastName}` : "Nombre Usuario"}</h3>
               <h4 className="text-lg text-gray-500">{role}</h4>

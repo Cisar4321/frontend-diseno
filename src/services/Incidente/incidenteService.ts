@@ -103,7 +103,7 @@ export class IncidenteService {
 
       return response.data;
     } catch (error) {
-      console.error('Error saving objeto perdido:', error.response?.data || error.message);
+      console.error('Error saving objeto perdido:',error);
       throw new Error('Failed to save objeto perdido');
     }
   }

@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AuthService } from '../services/Auth/authService';
 
 const Navbar = () => {
-  const [role, setRole] = useState(null); // Estado para guardar el rol del usuario
+  const [role, setRole] = useState<string | null>(null); // Allow string or null
   const location = useLocation();
 
   // Obtener el rol del usuario en el useEffect
   useEffect(() => {
     const fetchRole = async () => {
       try {
-        const userRole = AuthService.getUserInfo()?.role; // Obtén el rol del usuario
+        const userRole = AuthService.getUserInfo()?.role ?? null; // Obtén el rol del usuario
         setRole(userRole); // Guarda el rol en el estado
       } catch (error) {
         console.error("Error al obtener la información del usuario:", error);
@@ -20,7 +20,7 @@ const Navbar = () => {
   }, []);
 
   // Función para verificar si el enlace está activo
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path: string) => location.pathname === path;
 
   // Asegúrate de que el rol esté cargado antes de renderizar
   if (role === null) {

@@ -1,23 +1,43 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/NavBar';
 import { EmpleadoService } from '../services/Employees/employeeService';
-import { ObjetoPerdidoPatchRequestDto, EstadoTarea } from '../services/ObjetoPerdido/objetoPerdidoService';
-import { ObjetoPerdidoService } from '../services/ObjetoPerdido/objetoPerdidoService';
-import { IncidenteService } from '../services/Incidente/incidenteService';
-import { FiEdit, FiTrash, FiEye } from 'react-icons/fi'; // Importamos los íconos de react-icons/fi
+//import { ObjetoPerdidoPatchRequestDto, EstadoTarea } from '../services/ObjetoPerdido/objetoPerdidoService';
+//import { ObjetoPerdidoService } from '../services/ObjetoPerdido/objetoPerdidoService';
+//import { IncidenteService } from '../services/Incidente/incidenteService';
+import { FiEdit} from 'react-icons/fi'; // Importamos los íconos de react-icons/fi
+
+interface LostObject {
+  id: number;
+  fechaReporte: string;
+  detalle: string;
+  piso: string;
+  ubicacion: string;
+  estadoTarea: string;
+}
+
+interface Incident {
+  id: number;
+  fechaReporte: string;
+  detalle: string;
+  piso: string;
+  ubicacion: string;
+  estadoTarea: string;
+}
+
 
 const TasksEmployee = () => {
   const navigate = useNavigate();
   const empleadoService = new EmpleadoService();
-  const objetoPerdidoService = new ObjetoPerdidoService(); // Crear una instancia aquí
-  const incidenteService = new IncidenteService(); // Crear una instancia aquí
+  //const objetoPerdidoService = new ObjetoPerdidoService(); // Crear una instancia aquí
+  //const incidenteService = new IncidenteService(); // Crear una instancia aquí
 
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [userRole, setUserRole] = useState('employee');
-  const [lostObjects, setLostObjects] = useState([]);
-  const [incidents, setIncidents] = useState([]);
+ // const [userRole, setUserRole] = useState('employee');
+  const [lostObjects, setLostObjects] = useState<LostObject[]>([]);
+const [incidents, setIncidents] = useState<Incident[]>([]);
+
   const [view, setView] = useState('lostObjects'); // Usamos un state para gestionar la vista
 
   // Obtener los datos de objetos perdidos e incidentes desde la API
@@ -25,7 +45,14 @@ const TasksEmployee = () => {
     const fetchData = async () => {
       try {
         const objetosPerdidos = await empleadoService.getObjetosPerdidosAsignados();
-        const incidentes = await empleadoService.getIncidentesAsignados();
+        const incidentesResponse = await empleadoService.getIncidentesAsignados();
+        
+        // Transform the incidentesResponse into the correct format
+        const incidentes: Incident[] = incidentesResponse.map((incidente) => ({
+          ...incidente,
+          fechaReporte: incidente.fechaReporte ?? '',  // Ensure fechaReporte is a string
+        }));
+  
         setLostObjects(objetosPerdidos);
         setIncidents(incidentes);
       } catch (error) {
@@ -34,15 +61,17 @@ const TasksEmployee = () => {
     };
     fetchData();
   }, []);
+  
 
   const totalPages = Math.ceil((view === 'lostObjects' ? lostObjects : incidents).length / entriesPerPage);
 
-  const handleEntriesChange = (e) => {
+  const handleEntriesChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setEntriesPerPage(Number(e.target.value));
     setCurrentPage(1); // Reinicia a la primera página al cambiar el número de entradas
   };
+  
 
-  const handlePageChange = (pageNumber) => {
+  const handlePageChange = (pageNumber:number) => {
     if (pageNumber > 0 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
     }
@@ -51,6 +80,7 @@ const TasksEmployee = () => {
   const startIndex = (currentPage - 1) * entriesPerPage;
   const currentEntries = (view === 'lostObjects' ? lostObjects : incidents).slice(startIndex, startIndex + entriesPerPage);
 
+  /*
   const updateStatus = async (index: number, newStatus: EstadoTarea) => {
     try {
       const patchDto: ObjetoPerdidoPatchRequestDto = {
@@ -86,18 +116,24 @@ const TasksEmployee = () => {
     }
   };
 
+  
   const statusColors = {
     "NO_FINALIZADO": "bg-red-600 text-white",
     "FINALIZADO": "bg-green-600 text-white",
   };
 
-  const handleEditClick = (id) => {
+  */
+
+  const handleEditClick = (id:number) => {
     if (view === 'lostObjects') {
       navigate(`/lost-objects/${id}`);
     } else {
       navigate(`/incidents/${id}`);
     }
   };
+
+
+  /*
 
   const handleDeleteLostObject = async (id: number) => {
     const confirmed = window.confirm('¿Está seguro de que desea eliminar este objeto perdido?');
@@ -112,6 +148,8 @@ const TasksEmployee = () => {
     }
   };
 
+
+  
   const handleDeleteIncident = async (id: number) => {
     const confirmed = window.confirm('¿Está seguro de que desea eliminar este incidente?');
     if (confirmed) {
@@ -124,7 +162,7 @@ const TasksEmployee = () => {
       }
     }
   };
-
+*/
 
   return (
     <div className="bg-[#f5f5ff] flex min-h-screen">
@@ -191,7 +229,7 @@ const TasksEmployee = () => {
                     <td colSpan={5} className="py-2 px-4 text-center">No hay tareas disponibles</td>
                   </tr>
                 ) : (
-                  currentEntries.map((entry, index) => (
+                  currentEntries.map((entry, ) => (
                     <tr className="border-t" key={entry.id}>
                       <td className="py-2 px-4">{entry.fechaReporte}</td>
                       <td className="py-2 px-4">{entry.detalle}</td>

@@ -1,9 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/NavBar';
 import { IncidenteService } from '../services/Incidente/incidenteService';
-import { FiEdit, FiTrash, FiEye } from 'react-icons/fi';
+import { FiEdit } from 'react-icons/fi';
 import { AuthService } from '../services/Auth/authService';
+
+interface Incidente {
+  piso: string;
+  ubicacion: string;
+  estadoReporte: EstadoReporte;
+  estadoTarea: EstadoTarea;
+  detalle: string;
+  email: string;
+  phoneNumber: string;
+  fechaReporte: string;
+}
+
+
 
 // Enums definidos
 export enum EstadoReporte {
@@ -19,7 +32,7 @@ export enum EstadoTarea {
 
 const View_Inc = () => {
   const { id } = useParams();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<Incidente | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [statusType, setStatusType] = useState<'reporte' | 'tarea'>('reporte');
   const [newStatus, setNewStatus] = useState<string>('');
@@ -37,7 +50,7 @@ const View_Inc = () => {
 
     const loadData = async () => {
       try {
-        const incidentData = await incidenteService.getIncidenteById(id);
+        const incidentData = await incidenteService.getIncidenteById(Number(id));
         setUser(incidentData);
       } catch (error) {
         console.error('Error al obtener los datos:', error);
@@ -71,11 +84,17 @@ const View_Inc = () => {
       const patchDto = {
         [statusType === 'reporte' ? 'estadoReporte' : 'estadoTarea']: newStatus,
       };
-      await incidenteService.updateIncidenteStatus(id, patchDto);
-      setUser((prevUser) => ({
-        ...prevUser,
-        [statusType === 'reporte' ? 'estadoReporte' : 'estadoTarea']: newStatus,
-      }));
+      await incidenteService.updateIncidenteStatus(Number(id), patchDto);
+      setUser((prevUser) => {
+        if (!prevUser) return null; // Retorna null si no hay un valor previo
+      
+        return {
+          ...prevUser,
+          [statusType === 'reporte' ? 'estadoReporte' : 'estadoTarea']: newStatus,
+        };
+      });
+      
+      
       handleCloseModal();
     } catch (error) {
       console.error('Error al actualizar el estado:', error);

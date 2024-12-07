@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/NavBar';
 import { EstudianteService } from '../services/Student/studentService';
@@ -6,11 +6,50 @@ import { AdminService } from '../services/Admin/adminService';
 
 const ITEMS_PER_PAGE = 5; // Cantidad de elementos por página
 
+interface IncidentType {
+  id: string;
+  piso: string;
+  ubicacion: string;
+  estadoReporte: string;
+  estadoTarea: string;
+  detalle: string;
+}
+
+interface LostItemType {
+  id: string;
+  piso: string;
+  ubicacion: string;
+  estadoReporte: string;
+  estadoTarea: string;
+  detalle: string;
+}
+
+interface UserType {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  email: string;
+}
+
+interface ItemType {
+  id: string;
+  piso: string;
+  ubicacion: string;
+  estadoReporte: string;
+  estadoTarea: string;
+  detalle: string;
+}
+
+
+
 const ViewReportsEst = () => {
   const { id } = useParams();
-  const [user, setUser] = useState(null);
-  const [lostItems, setLostItems] = useState([]);
-  const [incidents, setIncidents] = useState([]);
+  const [user, setUser] = useState<UserType | null>(null);
+
+  const [lostItems, setLostItems] = useState<LostItemType[]>([]);
+
+
+  const [incidents, setIncidents] = useState<IncidentType[]>([]);
 
   const [lostItemsPage, setLostItemsPage] = useState(1);
   const [incidentsPage, setIncidentsPage] = useState(1);
@@ -20,36 +59,52 @@ const ViewReportsEst = () => {
   const estudianteService = new EstudianteService();
   const adminService = new AdminService();
 
+  
   useEffect(() => {
     const loadData = async () => {
       try {
-        const userData = await estudianteService.getEstudiante(id);
+        const userData = await estudianteService.getEstudiante(Number(id));
         setUser(userData);
-
-        const lostItemsData = await adminService.getObjetosPerdidosPorEstudiante(id);
-        setLostItems(lostItemsData);
-
-        const incidentsData = await adminService.getIncidentesPorEstudiante(id);
-        setIncidents(incidentsData);
+  
+        const lostItemsData = await adminService.getObjetosPerdidosPorEstudiante(Number(id));
+        setLostItems(
+          lostItemsData.map((item: any) => ({
+            ...item,
+            id: String(item.id), // Convertir id a string
+          }))
+        );
+  
+        const incidentsData = await adminService.getIncidentesPorEstudiante(Number(id));
+        setIncidents(
+          incidentsData.map((incident: any) => ({
+            ...incident,
+            id: String(incident.id), // Convertir id a string
+          }))
+        );
       } catch (error) {
         console.error('Error al obtener los datos:', error);
       }
     };
-
+  
     loadData();
   }, [id]);
+  
+  
+  
 
   const handleGoBack = () => {
     navigate('/users');
   };
 
-  const paginate = (items, page) => {
+  const paginate = (items: ItemType[], page: number): ItemType[] => {
     const start = (page - 1) * ITEMS_PER_PAGE;
     const end = start + ITEMS_PER_PAGE;
     return items.slice(start, end);
   };
+  
 
-  const totalPages = (items) => Math.ceil(items.length / ITEMS_PER_PAGE);
+  const totalPages = (items: ItemType[]): number =>
+    Math.ceil(items.length / ITEMS_PER_PAGE);
 
   return (
     <div className="bg-[#f5f5ff] flex min-h-screen">
@@ -77,7 +132,7 @@ const ViewReportsEst = () => {
               </tr>
             </thead>
             <tbody>
-              {paginate(lostItems, lostItemsPage).map((item) => (
+              {paginate(lostItems, lostItemsPage).map((item: LostItemType) => (
                 <tr key={item.id}>
                   <td className="px-4 py-2">{item.piso}</td>
                   <td className="px-4 py-2">{item.ubicacion}</td>
@@ -120,7 +175,7 @@ const ViewReportsEst = () => {
               </tr>
             </thead>
             <tbody>
-              {paginate(incidents, incidentsPage).map((incident) => (
+              {paginate(incidents, incidentsPage).map((incident:IncidentType) => (
                 <tr key={incident.id}>
                   <td className="px-4 py-2">{incident.piso}</td>
                   <td className="px-4 py-2">{incident.ubicacion}</td>

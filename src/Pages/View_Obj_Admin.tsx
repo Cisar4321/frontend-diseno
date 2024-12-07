@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/NavBar';
 import { ObjetoPerdidoService } from '../services/ObjetoPerdido/objetoPerdidoService';
-import { FiEdit, FiTrash, FiEye } from 'react-icons/fi';
+import { FiEdit} from 'react-icons/fi';
 import { AuthService } from '../services/Auth/authService';
 
 // Enums definidos
@@ -17,9 +17,21 @@ export enum EstadoTarea {
   FINALIZADO = 'FINALIZADO',
 }
 
+// Define the User type
+interface User {
+  descripcion: string;
+  ubicacion: string;
+  estadoReporte: EstadoReporte;
+  estadoTarea: EstadoTarea;
+  fechaReporte: string;
+  email: string;
+  phoneNumber: string;
+  fotoObjetoPerdidoUrl: string | null;
+}
+
 const View_Obj = () => {
   const { id } = useParams();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [statusType, setStatusType] = useState<'reporte' | 'tarea'>('reporte');
   const [newStatus, setNewStatus] = useState<string>('');
@@ -33,18 +45,32 @@ const View_Obj = () => {
     if (userRole) {
       setRole(userRole); // Guarda el rol en el estado
     }
-
+  
     const loadData = async () => {
       try {
-        const userData = await objetoPerdidoService.getObjetoPerdidoById(id);
-        setUser(userData);
-        console.log(user);
+        const userData = await objetoPerdidoService.getObjetoPerdidoById(Number(id));
+  
+        // Map the response to the User type
+        const userMapped: User = {
+          descripcion: userData.detalle || '', // Ensure descripcion is assigned
+          ubicacion: userData.ubicacion || '', // Ensure ubicacion is assigned
+          estadoReporte: userData.estadoReporte || EstadoReporte.PENDIENTE, // Default to 'PENDIENTE'
+          estadoTarea: userData.estadoTarea || EstadoTarea.NO_FINALIZADO, // Default to 'NO_FINALIZADO'
+          fechaReporte: userData.fechaReporte || '', // Ensure fechaReporte is assigned
+          email: userData.email || '', // Ensure email is assigned
+          phoneNumber: userData.phoneNumber || '', // Ensure phoneNumber is assigned
+          fotoObjetoPerdidoUrl: userData.fotoObjetoPerdidoUrl || null, // Ensure the URL is either valid or null
+        };
+  
+        setUser(userMapped); // Set the user state with the mapped object
       } catch (error) {
         console.error('Error al obtener los datos:', error);
       }
     };
     loadData();
   }, [id]);
+  
+  
 
   const handleGoBack = () => {
     console.log('role', role);
@@ -70,11 +96,17 @@ const View_Obj = () => {
       const patchDto = {
         [statusType === 'reporte' ? 'estadoReporte' : 'estadoTarea']: newStatus,
       };
-      await objetoPerdidoService.updateObjetoPerdidoStatus(id, patchDto);
-      setUser((prevUser) => ({
-        ...prevUser,
-        [statusType === 'reporte' ? 'estadoReporte' : 'estadoTarea']: newStatus,
-      }));
+      await objetoPerdidoService.updateObjetoPerdidoStatus(Number(id), patchDto);
+      setUser((prevUser: User | null) => {
+        if (prevUser) {
+          return {
+            ...prevUser,
+            [statusType === 'reporte' ? 'estadoReporte' : 'estadoTarea']: newStatus,
+          };
+        }
+        return prevUser; // Return null if prevUser is null
+      });
+      
       handleCloseModal();
       // Redirigir después de la actualización
       handleGoBack();

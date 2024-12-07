@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/NavBar';
 import { FiEdit, FiTrash, FiEye } from 'react-icons/fi';
@@ -70,9 +70,7 @@ const User = () => {
     navigate('/users/create-admin');
   };
 
-  const handleEditUser = (id: number) => {
-    navigate(`/users/edit/${id}`);
-  };
+
 
   const handleDeleteUser = async (id: number) => {
     const confirmed = window.confirm('¿Está seguro de que desea eliminar este usuario? Esta acción es irreversible.');
